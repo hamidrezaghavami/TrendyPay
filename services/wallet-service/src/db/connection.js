@@ -1,0 +1,1 @@
+// Database client connection pool (PostgreSQL/Redis/Mongo).

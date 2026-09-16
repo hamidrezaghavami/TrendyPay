@@ -1,0 +1,1 @@
+// Maps gRPC methods (getBalance, creditWallet) to service logic.

@@ -1,0 +1,1 @@
+// Boots the gRPC server and binds to port 50051
