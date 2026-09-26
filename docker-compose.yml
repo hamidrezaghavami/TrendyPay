@@ -1,0 +1,65 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: trendypay-api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - WALLET_SERVICE_URL=wallet-service:50051
+      - ORDER_SERVICE_URL=order-service:50052
+      - PAYMENT_SERVICE_URL=payment-service:50053
+    depends_on:
+      - wallet-service
+      - order-service
+      - payment-service
+    networks:
+      - trendypay-net
+
+  wallet-service:
+    build:
+      context: .
+      dockerfile: services/wallet-service/Dockerfile
+    container_name: trendypay-wallet-service
+    restart: unless-stopped
+    ports:
+      - "50051:50051"
+    networks:
+      - trendypay-net
+
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    container_name: trendypay-order-service
+    restart: unless-stopped
+    ports:
+      - "50052:50052"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_USER=trendypay_user
+      - PGUSER=trendypay_user
+    networks:
+      - trendypay-net
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: trendypay-payment-service
+    restart: unless-stopped
+    ports:
+      - "50053:50053"
+    networks:
+      - trendypay-net
+
+networks:
+  trendypay-net:
+    driver: bridge
