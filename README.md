@@ -190,15 +190,18 @@ docker compose ps
 
 ## 🧪 Testing & Quality Assurance
 
-### 1. Unit & Integration Tests (Jest)
-Run unit tests across all microservices or execute the full test suite:
+### 1. Unit & Integration Tests (Jest & ESM)
+Tests run across all microservices via native ECMAScript Modules (ESM) using `pnpm` workspaces:
 
 ```bash
-# Run tests across all individual services
-npm test
+# Run unit tests across all workspace microservices
+pnpm test
+
+# Run all test suites with Istanbul code coverage reports
+pnpm test:cov
 
 # Run End-to-End checkout scenario test
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 ### 2. High-Concurrency Load Testing (k6)
@@ -214,8 +217,61 @@ k6 run tests/load/wallet-contention.js
 
 ---
 
-## 🛡 Fault Tolerance & Design Patterns
+## Test Suit Breakdown
+```bash 
+│ File              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+│ ------------------|---------|----------|---------|---------|-------------------
+│ All files         |     100 |    64.28 |     100 |     100 |                   
+│  walletHandler.js |     100 |    64.28 |     100 |     100 | 7-48              
+│ ------------------|---------|----------|---------|---------|-------------------
+│ Test Suites: 1 passed, 1 total
+│ Tests:       8 passed, 8 total
+│ Snapshots:   0 total
+│ Time:        0.685 s, estimated 1 s
+│ Ran all test suites.
+└─ Done in 971ms
+```
+## Performance & Load Testing
 
-1. **Idempotency Keys:** Every checkout request accepts an `Idempotency-Key` header. Duplicate requests with the same key return the cached response without double-debiting.
-2. **Row-Level Locking:** Uses PostgreSQL's `SELECT ... FOR UPDATE` inside `wallet-service` to serialize balance deductions per user account, preventing negative balances during race conditions.
-3. **Graceful gRPC Error Propagation:** Internal gRPC status codes (`NOT_FOUND`, `FAILED_PRECONDITION`, `ALREADY_EXISTS`) are systematically mapped to HTTP 4xx/5xx status codes at the API Gateway.
+The TrendyPay microservices architecture has been rigorously benchmarked using [k6](https://k6.io/?utm_source=gemini) to ensure stability, high availability, and strict ACID compliance under heavy concurrent load.
+
+### 1. End-to-End Checkout Flow (Load Test)
+
+This test simulates sustained traffic spikes across the entire microservices ecosystem. It verifies that the API Gateway can seamlessly route payloads to the Order, Wallet, and Payment gRPC services without dropping connections or failing transactions.
+
+**Execution Command:**
+
+```bash
+k6 run tests/checkout-load.js
+
+```
+
+**Results & Metrics:**
+
+* **Success Rate:** 100% (0 failed HTTP requests out of 2,436 total requests)
+* **Throughput:** 812 Iterations (Successfully completed the full 3-step checkout flow 812 times)
+* **Concurrency:** 50 VUs (Handled 50 simultaneous virtual users over a 35-second ramped load)
+* **Response Time (p95):** 155.57ms (95% of all requests completed in under 156 milliseconds)
+* **Check Validations:** 100% Pass (Verified 201/200 status codes for Order Creation, Wallet Top-up, and Checkout)
+
+---
+
+### 2. Database Concurrency & Race Conditions (Contention Test)
+
+This test aggressively hammers a single wallet account with simultaneous top-up requests to validate the PostgreSQL connection pooling and row-level locking (`SELECT ... FOR UPDATE`). It ensures that race conditions cannot overwrite data and that wallet balances maintain strict mathematical integrity under extreme contention.
+
+**Execution Command:**
+
+```bash
+k6 run tests/wallet-contention.js
+
+```
+
+**Results & Metrics:**
+
+* **Transaction Integrity:** Pass (Final balance accurately reflected all concurrent transactions without data loss)
+* **Success Rate:** 100% (Zero `500 Internal Server Error` crashes; pool efficiently queued all connections)
+* **Concurrency:** 20 VUs (Executed 40 rapid, shared iterations simultaneously against a single database row)
+* **Response Time (p95):** 185.63ms (Maintained sub-200ms latency even while resolving database lock queues)
+* **Check Validations:** 100% Pass (Verified clean 200/201 HTTP status codes for all rapid concurrent requests)
+---
