@@ -1,0 +1,49 @@
+syntax = "proto3";
+package payment;
+
+service PaymentService {
+    rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
+    rpc GetPaymentStatus (GetPaymentStatusRequest) returns (GetPaymentStatusResponse);
+}
+
+enum PaymentMethod {
+  PAYMENT_METHOD_UNSPECIFIED = 0;
+  WALLET = 1;
+  CREDIT_CARD = 2;
+}
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PENDING = 1;
+  SUCCESS = 2;
+  FAILED = 3;
+}
+
+message ProcessPaymentRequest {
+    string order_id = 1;
+    string user_id = 2;
+    double amount = 3;
+    string currency = 4;
+    PaymentMethod payment_method = 5;
+    string idempotency_key = 6;
+}
+
+message ProcessPaymentResponse {
+    string payment_id = 1;
+    PaymentStatus status = 2;
+    int64 transaction_timestamp = 3;
+    string failure_reason = 4;
+}
+
+message GetPaymentStatusRequest { 
+    string payment_id = 1;
+}
+
+message GetPaymentStatusResponse {
+    string payment_id = 1;
+    string order_id = 2;
+    double amount = 3;
+    string currency = 4;
+    PaymentStatus status = 5;
+    int64 created_at = 6;
+}
