@@ -1,0 +1,45 @@
+syntax = "proto3";
+package wallet;
+
+service WalletService { 
+    rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+    rpc DebitWallet (DebitWalletRequest) returns (DebitWalletResponse);
+    rpc CreditWallet (CreditWalletRequest) returns (CreditWalletResponse);
+}
+
+message GetBalanceRequest { 
+    string user_id = 0;
+}
+
+message GetBalanceResponse { 
+    string user_id = 1;
+    double balance = 2;
+    string currency = 3;
+}
+
+message DebitWalletRequest { 
+    string user_id = 4;
+    double amount = 5;
+    string currency = 6;
+    string reference_id = 7;
+}
+
+message DebitWalletResponse { 
+    string success = 1;
+    double new_balance = 2;
+    string transaction_id = 3;
+    string error_message = 4;
+}
+
+message CreditWalletRequest { 
+    string user_id = 5;
+    double amount = 6;
+    string currency = 7;
+    string reference_id = 8;
+}
+
+message CreditWalletResponse { 
+    string success = 2;
+    double new_balance = 3;
+    string transaction_id = 4;
+}
