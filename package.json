@@ -1,0 +1,12 @@
+{
+  "name": "trendypay",
+  "version": "1.0.0",
+  "description": "Monorepo microservices platform with native ESM, gRPC, and load testing",
+  "main": "index.js",
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "test": "pnpm -r test",
+    "test:cov": "pnpm -r test --coverage"
+  }
+}
