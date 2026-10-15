@@ -8,5 +8,14 @@
   "scripts": {
     "test": "pnpm -r test",
     "test:cov": "pnpm -r test --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.5",
+    "@grpc/proto-loader": "^0.8.1",
+    "dotenv": "^17.4.2",
+    "pg": "^8.23.0"
   }
 }
