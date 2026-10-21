@@ -28,6 +28,8 @@ services:
     restart: unless-stopped
     ports:
       - "50051:50051"
+    extra_hosts:  # Added these lines
+      - "host.docker.internal:host-gateway" 
     networks:
       - trendypay-net
 
@@ -57,6 +59,8 @@ services:
     restart: unless-stopped
     ports:
       - "50053:50053"
+    extra_hosts:  # Added these lines
+      - "host.docker.internal:host-gateway"
     networks:
       - trendypay-net
 
