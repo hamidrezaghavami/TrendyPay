@@ -69,6 +69,12 @@ export default function () {
         'Content-Type': 'application/json',
         'Idempotency-Key': `idemp_${orderId}`,
       };
+
+      const checkoutRes = http.post(
+        `${BASE_URL}/payments`,
+        checkoutPayload,
+        { headers: checkoutHeaders }
+      );
     }
   }
 
